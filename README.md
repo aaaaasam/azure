@@ -1,1 +1,1 @@
-# azure
+# azure simple script
