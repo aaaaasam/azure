@@ -35,24 +35,6 @@ def get_automation_runas_credential(runas_connection, resource_url, authority_ur
             thumbprint)
     )
 
-
-# Authenticate to Azure using the Azure Automation RunAs service principal
-runas_connection = automationassets.get_automation_connection("AzureRunAsConnection")
-resource_url = AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id
-authority_url = AZURE_PUBLIC_CLOUD.endpoints.active_directory
-resourceManager_url = AZURE_PUBLIC_CLOUD.endpoints.resource_manager
-azure_credential = get_automation_runas_credential(runas_connection, resource_url, authority_url)
-
-
-disk_resource_id_list = [
-    ('/subscriptions/a61933a3-71ed-4ae8-99c2-fc57d9311428/resourceGroups/sam-test-backup-rg/providers/Microsoft.Compute/disks/test01', 'eastasia'),
-    ('/subscriptions/a61933a3-71ed-4ae8-99c2-fc57d9311428/resourceGroups/sam-test-backup-rg/providers/Microsoft.Compute/disks/test02', 'eastasia')
-]
-
-
-CMClient = ComputeManagementClient(credentials=azure_credential, subscription_id=runas_connection["SubscriptionId"])
-
-
 def create_snapshot(diskinfo):
     _resource_id = diskinfo[0]
     _location = diskinfo[1]
@@ -96,10 +78,26 @@ def check_snapshot_and_delete_it_when_timeout(CMC, snapshot_id_list, days=7):
             delete_snapshot(CMC, _id)
 
 if __name__ == '__main__':
+    # Authenticate to Azure using the Azure Automation RunAs service principal
+    runas_connection = automationassets.get_automation_connection("AzureRunAsConnection")
+    resource_url = AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id
+    authority_url = AZURE_PUBLIC_CLOUD.endpoints.active_directory
+    resourceManager_url = AZURE_PUBLIC_CLOUD.endpoints.resource_manager
+    azure_credential = get_automation_runas_credential(runas_connection, resource_url, authority_url)
+
+
+    disk_resource_id_list = [
+        ('/subscriptions/a61933a3-71ed-4ae8-99c2-fc57d9311428/resourceGroups/sam-test-backup-rg/providers/Microsoft.Compute/disks/test01', 'eastasia'),
+        ('/subscriptions/a61933a3-71ed-4ae8-99c2-fc57d9311428/resourceGroups/sam-test-backup-rg/providers/Microsoft.Compute/disks/test02', 'eastasia')
+    ]
+
+
+    CMClient = ComputeManagementClient(credentials=azure_credential, subscription_id=runas_connection["SubscriptionId"])
+
     # Check Snapshot and delete it when it's timeout.
     _snapshot_id_list = get_snapshot_resource_id_list(CMClient)
     check_snapshot_and_delete_it_when_timeout(CMClient, _snapshot_id_list)
-    
+
     # Create Snapshot
     for _diskinfo in disk_resource_id_list:
         print(create_snapshot(_diskinfo).result().as_dict())
