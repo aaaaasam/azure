@@ -2,6 +2,8 @@ import azure.mgmt.resource
 import automationassets
 from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD
 from azure.mgmt.compute import ComputeManagementClient
+from datetime import datetime
+from datetime import timedelta
 import time
 import re
 
@@ -69,6 +71,37 @@ def create_snapshot(diskinfo):
 
     return CMClient.snapshots.create_or_update(_resource_group ,_snapshotname , _snapshot_metadata)
 
+
+def get_snapshot_resource_id_list(CMC):
+    return [
+        resouce.id for resouce in CMC.snapshots.list()
+    ]
+
+def delete_snapshot(CMC, id):
+    _snapshot_name = id.split('/')[-1]
+    _resource_group_name = id.split('/')[4]
+    CMC.snapshots.delete(
+        resource_group_name=_resource_group_name,
+        snapshot_name=_snapshot_name
+    )
+
+def check_snapshot_and_delete_it_when_timeout(CMC, snapshot_id_list, days=7):
+    _timeout = int((datetime.now() - timedelta(days=days)).strftime("%Y%m%d")) * 1000000
+    #_timeout = 20210416000000
+    for _id in snapshot_id_list:
+        _create_time = int(_id.split('_')[-1])
+        #print(_create_time, _timeout)
+        if _create_time < _timeout:
+            print("The id({}) will be delete later.".format(_id))
+            delete_snapshot(CMC, _id)
+
 if __name__ == '__main__':
+    # Check Snapshot and delete it when it's timeout.
+    _snapshot_id_list = get_snapshot_resource_id_list(CMClient)
+    check_snapshot_and_delete_it_when_timeout(CMClient, _snapshot_id_list)
+    
+    # Create Snapshot
     for _diskinfo in disk_resource_id_list:
         print(create_snapshot(_diskinfo).result().as_dict())
+    
+    
