@@ -54,9 +54,9 @@ def create_snapshot(diskinfo):
     return CMClient.snapshots.create_or_update(_resource_group ,_snapshotname , _snapshot_metadata)
 
 
-def get_snapshot_resource_id_list(CMC):
+def get_snapshot_resource_id_list(CMC, resource_group):
     return [
-        resouce.id for resouce in CMC.snapshots.list()
+        resouce.id for resouce in CMC.snapshots.list_by_resource_group(resource_group_name=resource_group)
     ]
 
 def delete_snapshot(CMC, id):
@@ -95,7 +95,8 @@ if __name__ == '__main__':
     CMClient = ComputeManagementClient(credentials=azure_credential, subscription_id=runas_connection["SubscriptionId"])
 
     # Check Snapshot and delete it when it's timeout.
-    _snapshot_id_list = get_snapshot_resource_id_list(CMClient)
+    resource_group_name = ""
+    _snapshot_id_list = get_snapshot_resource_id_list(CMClient, resource_group_name)
     check_snapshot_and_delete_it_when_timeout(CMClient, _snapshot_id_list)
 
     # Create Snapshot
