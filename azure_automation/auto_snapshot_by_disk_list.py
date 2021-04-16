@@ -96,8 +96,11 @@ if __name__ == '__main__':
 
     # Check Snapshot and delete it when it's timeout.
     resource_group_name = ""
-    _snapshot_id_list = get_snapshot_resource_id_list(CMClient, resource_group_name)
-    check_snapshot_and_delete_it_when_timeout(CMClient, _snapshot_id_list)
+    if resource_group_name:
+        _snapshot_id_list = get_snapshot_resource_id_list(CMClient, resource_group_name)
+        check_snapshot_and_delete_it_when_timeout(CMClient, _snapshot_id_list)
+    else:
+        print("No resource group name variable, so, we can't delete any resource")
 
     # Create Snapshot
     for _diskinfo in disk_resource_id_list:
