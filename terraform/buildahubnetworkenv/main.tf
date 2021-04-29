@@ -44,7 +44,7 @@ provider "azurerm" {
   client_id       = "7c0ae36b-ac2b-49dc-8aeb-e5d4e13d7778"
   client_secret   = "XykTS.kaI3peiET~-Uuhx.m4vJcEVIqk9V"
   tenant_id       = "2cc5e5e8-0383-4da4-951e-51c19e2db9c0"
-  # Use azure web shell run this command  -> az ad sp create-for-rbac
+  # Use azure web shell run this command to generate Authtication key， and the above authtication key has been deleted.  -> az ad sp create-for-rbac
 }
 
 # Create Resource Group
