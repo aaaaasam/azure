@@ -1,11 +1,11 @@
 locals {
-  resource_localtion  = "eastasia"
+  resource_localtion  = "southeastasia"
   defaultsubnetname   = "DefaultSubnet"
   vnet_cidr           = "10.0.0.0/24"
   vm_count            = 3
   vmsize              = "Standard_E2s_v4"
-  vmadmin             = "sam"
-  vmadminpass         = "Abc123456789!"
+  vmadmin             = "<adminuser>"
+  vmadminpass         = "<adminpassword>"
   subscription_id     = "4b3f41fa-b066-4ffa-92e5-093d8669f29c"
   format_string       = {
     "resource_group_name_format"    = "%s-rg"
@@ -16,26 +16,6 @@ locals {
     "subnet_id_format"              = "%s/subnets/DefaultSubnet"
     "vm_name_format"                = "test-vm-%s-%s"
   }
-  custom_data         = <<CUSTOM_DATA
-  #!/bin/bash
-  sudo -i 
-  apt-get update && apt-get install -y apt-transport-https
-  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-  cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
-  deb http://apt.kubernetes.io/ kubernetes-xenial main
-  EOF
-  apt-get update
-  apt-get install -y  kubelet=1.15.4-00 \
-                      kubeadm=1.15.4-00 \
-                      kubectl=1.15.4-00 docker.io
-
-  echo "net.bridge.bridge-nf-call-ip6tables = 1" >> /etc/sysctl.conf
-  echo "net.bridge.bridge-nf-call-iptables = 1" >> /etc/sysctl.conf
-  echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
-  echo "vm.swappiness = 0" >>  /etc/sysctl.conf
-
-  sysctl -p
-  CUSTOM_DATA
 }
 
 terraform {
@@ -105,12 +85,20 @@ resource azurerm_public_ip pip {
   ]
 }
 
-output pip_list {
+output pip_id_list {
   value       = azurerm_public_ip.pip.*.id
   depends_on  = [
     azurerm_public_ip.pip
   ]
 }
+
+output pip_address {
+  value       = azurerm_public_ip.pip.*.ip_address
+  depends_on  = [
+    azurerm_public_ip.pip
+  ]
+}
+
 
 # Create Virtual network interface
 resource azurerm_network_interface interface {
@@ -143,34 +131,41 @@ output virtual_network_interface_id {
 }
 
 # create vm
-resource "azurerm_linux_virtual_machine" "vm" {
+resource "azurerm_virtual_machine" "vm" {
   count = local.vm_count
 
   name                = format(local.format_string.vm_name_format, local.resource_localtion, count.index)
   resource_group_name = format(local.format_string.resource_group_name_format, local.resource_localtion)
   location            = local.resource_localtion
-  size                = local.vmsize
-  admin_username      = local.vmadmin
+  vm_size             = local.vmsize
+
   network_interface_ids = [
     element(azurerm_network_interface.interface.*.id, count.index)
   ]
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+  storage_os_disk {
+    name                  = format("%s-osdisk", format(local.format_string.vm_name_format, local.resource_localtion, count.index))
+    caching               = "ReadWrite"
+    create_option         = "FromImage"
+    managed_disk_type     = "Standard_LRS"
   }
 
-  disable_password_authentication = false
-  admin_password = local.vmadminpass
+  os_profile {
+    computer_name  = format(local.format_string.vm_name_format, local.resource_localtion, count.index)
+    admin_username = local.vmadmin
+    admin_password = local.vmadminpass
+  }
 
-  source_image_reference {
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
+  
+  storage_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
     sku       = "16.04-LTS"
     version   = "latest"
   }
-
-  custom_data = base64encode(local.custom_data)
 
   depends_on = [
     azurerm_network_interface.interface
@@ -178,8 +173,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
 }
 
 output vitual_machine_id {
-  value       = azurerm_linux_virtual_machine.vm.*.id
+  value       = azurerm_virtual_machine.vm.*.id
   depends_on  = [
-    azurerm_linux_virtual_machine.vm
+    azurerm_virtual_machine.vm
   ]
 }

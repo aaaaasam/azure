@@ -1,6 +1,7 @@
 # directory
 .terraform
 ansible
+test
 
 # file
 .terraform.lock.hcl
