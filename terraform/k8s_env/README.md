@@ -5,7 +5,7 @@
 > 针对于Terraform版本，可以在Terraform上下载对应的版本 -> https://releases.hashicorp.com/terraform/0.15.1/
 
 ## 运行
-> 下载目录，并执行下面的命令
-'''bash
+> 下载当前目录，并执行下面的命令运行K8s初始化脚本，
+```bash
 bash run.sh
-'''
+```
