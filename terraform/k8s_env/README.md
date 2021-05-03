@@ -7,5 +7,7 @@
 ## 运行
 > 下载当前目录，并执行下面的命令运行K8s初始化脚本，
 ```bash
+git clone https://github.com/aaaaasam/azure.git
+cd azure/terraform/k8s_env
 bash run.sh
 ```
