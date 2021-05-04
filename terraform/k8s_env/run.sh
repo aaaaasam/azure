@@ -59,6 +59,7 @@ function install_k8s_cluster {
 
 function main {
     install_dependency_package
+    disable_ansible_host_check
     check_terraform_and_install
     buildansiblehostfile
     create_vm_on_azure
