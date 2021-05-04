@@ -4,7 +4,7 @@ terraform_template="template"
 
 function install_dependency_package {
     sudo apt update
-    sudo apt install jq unzip curl -y
+    sudo apt install jq unzip curl ansible sshpass -y
 }
 
 function check_terraform_and_install {
@@ -18,6 +18,10 @@ function check_terraform_and_install {
 function buildansiblehostfile {
     read -p 'Enter your vm username -> ' username
     read -p 'Enter your vm password -> ' password
+}
+
+function disable_ansible_host_check {
+    sudo sed -i "s/#host_key_checking = False/host_key_checking = False/" /etc/ansible/ansible.cfg
 }
 
 function create_vm_on_azure {

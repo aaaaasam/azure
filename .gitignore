@@ -8,3 +8,5 @@ test
 terraform.tfstate
 terraform.tfstate.backup
 .terraform.tfstate.lock.info
+host.txt
+terraform/k8s_env/main.tf
