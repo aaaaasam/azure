@@ -1,3 +1,6 @@
+data "azurerm_subscription" "current" {
+}
+
 locals {
   resource_localtion  = "southeastasia"
   defaultsubnetname   = "DefaultSubnet"
@@ -6,7 +9,7 @@ locals {
   vmsize              = "Standard_E2s_v4"
   vmadmin             = "<adminuser>"
   vmadminpass         = "<adminpassword>"
-  subscription_id     = "4b3f41fa-b066-4ffa-92e5-093d8669f29c"
+  subscription_id     = data.azurerm_subscription.current.subscription_id
   format_string       = {
     "resource_group_name_format"    = "%s-rg"
     "vnet_name_format"              = "test-%s-vnet"
