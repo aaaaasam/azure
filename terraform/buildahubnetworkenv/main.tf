@@ -1,3 +1,6 @@
+data "azurerm_subscription" "current" {
+}
+
 locals {
   region_and_CIDR = {
     "eastasia" = "10.0.0.0/24"
@@ -17,14 +20,14 @@ locals {
     "vm_name_format" = "test-vm-%s-01"
   }
   defaultsubnetname = "DefaultSubnet"
-  vmsize = "Standard_E4s_v4"
+  vmsize = "Standard_B1s"
   vmadmin = "sam"
   vmadminpass = "Abc123456789!"
   location_list = {
     "main" = "eastasia"
     "secondary" = ["southeastasia", "southafricanorth", "brazilsouth", "southcentralus", "uaenorth"]
   }
-  subscription_id = "4b3f41fa-b066-4ffa-92e5-093d8669f29c"
+  subscription_id = data.azurerm_subscription.current.subscription_id
 }
 
 terraform {
@@ -40,10 +43,11 @@ terraform {
 provider "azurerm" {
   features {}
 
-  subscription_id = "4b3f41fa-b066-4ffa-92e5-093d8669f29c"
-  client_id       = "7c0ae36b-ac2b-49dc-8aeb-e5d4e13d7778"
-  client_secret   = "XykTS.kaI3peiET~-Uuhx.m4vJcEVIqk9V"
-  tenant_id       = "2cc5e5e8-0383-4da4-951e-51c19e2db9c0"
+# Delete Azure account access info to avoid leaking
+  # subscription_id = " "
+  # client_id       = " "
+  # client_secret   = " "
+  # tenant_id       = " "
   # Use azure web shell run this command to generate Authtication key， and the above authtication key has been deleted.  -> az ad sp create-for-rbac
 }
 
