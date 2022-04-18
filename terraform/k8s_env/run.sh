@@ -59,6 +59,7 @@ function install_k8s_cluster {
 
     # run flanel pulgin on k8s.
     ansible -i host.txt master -m shell -a "mkdir -p $HOME/.kube;cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
+    ansible -i host.txt master -m shell -a "chown -R $username:$username $HOME/.kube"
     ansible -i host.txt master -m shell -a "mkdir -p /root/.kube;cp -i /etc/kubernetes/admin.conf /root/.kube/config"
     ansible -i host.txt master -m shell -a "curl -sL https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed 's/10.244.0.0/192.168.0.0/' > kube_flanel.yml; kubectl apply -f kube_flanel.yml"
 }
