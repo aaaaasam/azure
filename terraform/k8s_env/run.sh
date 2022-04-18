@@ -30,6 +30,14 @@ function create_vm_on_azure {
     terraform apply -auto-approve || exit 1
 }
 
+function connection_test {
+    ansible -i host.txt all -m ping
+    if [[ $? -ne 0 ]]; then
+        sleep 5
+        connection_test
+    fi
+}
+
 function generate_ansible_host_file {
     rm host.txt
     rm /tmp/host.txt
@@ -38,13 +46,11 @@ function generate_ansible_host_file {
     done
 
     cat /tmp/host.txt | sed '1 a [slave]' | sed '1 i [master]' > host.txt
-
-    ansible -i host.txt all -m ping || (echo "Can not access azure vm, Please check the configuration." ; exit 1)
-    ansible -i host.txt master -m ping || (echo "Can not access azure vm, Please check the configuration." ; exit 1)
-    ansible -i host.txt slave -m ping || (echo "Can not access azure vm, Please check the configuration." ; exit 1)
 }
 
 function install_k8s_cluster {
+    connection_test
+    # VM connection test
     ansible -i host.txt all -m script -a "script_dir/init_cluster_env.sh"
     # Initialization master node.
     ansible -i host.txt master -m shell -a "kubeadm init --pod-network-cidr=192.168.0.0/16"
