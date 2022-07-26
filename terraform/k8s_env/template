@@ -6,7 +6,7 @@ locals {
   defaultsubnetname   = "DefaultSubnet"
   vnet_cidr           = "10.0.0.0/24"
   vm_count            = 3
-  vmsize              = "Standard_E2s_v4"
+  vmsize              = "Standard_B2s"
   vmadmin             = "<adminuser>"
   vmadminpass         = "<adminpassword>"
   subscription_id     = data.azurerm_subscription.current.subscription_id
